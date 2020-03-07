@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width">
+	<meta name="mobile-web-app-capable" content="yes">
+	<title>index</title>
+	<link rel="shortcut icon" sizes="196x196" href="img/icon.png">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="https://bootswatch.com/4/darkly/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<!-- MENU -->
+	<div class="display-100" id="app">
+		<div class="btn-add-section" data-toggle="modal" data-target="#modalSection">
+			<div v-show="!isMenu" class="btn btn-outline-success btn-block">
+				Add Section
+			</div>
+			<div v-show="isMenu" class="btn btn-outline-success btn-block" style="margin-top: 0;">
+				Add {{page}}
+			</div>
+		</div>
+
+		<!-- Task -->
+		<div v-show="page == 'tasks' && !isMenu" class="display-use">
+			<div v-for="task in taskSection"class="btn btn-info btn-block" @click="swapMenu(task)">
+				{{task}}
+			</div>
+		</div>
+
+		<!-- Notes -->
+		<div v-show="page == 'notes' && !isMenu" class="display-use">
+			<div v-for="note in notesSection" class="btn btn-primary btn-block" @click="swapMenu(note)">
+				{{note}}
+			</div>
+		</div>
+
+		<!-- menuOfSection -->
+		<div v-show="isMenu" class="display-use">
+			<img src="img/backarrow.png" class="close icon" @click="swapMenu(null)">
+			<h3>{{pageSection}}</h3>
+			<div class="display-menu-use">
+
+				<!-- notes -->
+				<div v-if="page == 'notes'" v-for="item in arrayMenu" class="btn btn-info btn-block" @click="viewDataCard(item)">
+					<span>{{item.name}}</span>
+					<div v-if="item.isCard">
+						<div v-if="item.time1 != undefined" class="d-flex sbetween">
+							<div>
+								{{item.time1.day1}} a {{item.time1.day2}} 
+							</div>
+							de
+							<div>
+								{{item.time1.hour1}}hs a {{item.time1.hour2}}hs
+							</div>
+						</div>
+						<div v-if="item.time2 != undefined" class="d-flex sbetween">
+							<div>
+								{{item.time2.day1}} a {{item.time2.day2}}
+							</div>
+							<div>
+								{{item.time2.hour1}}hs a {{item.time2.hour2}}hs
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- tasks -->
+				<div v-if="page == 'tasks'" v-for="(item,index) in arrayMenu">
+						<div>	
+							<input :id="item.main" type="checkbox">
+							<label :for="item.main" class="btn btn-outline-info" data-toggle="collapse" :data-target="'#t'+index">{{item.main}}</label>
+						</div>
+						<div :id="'t'+index" class="collapse">
+							<button class="btn btn-danger">add subtask</button>
+							<div v-for="tsecond in item.second">	
+								<input :id="tsecond.main" type="checkbox">
+								<label :for="tsecond.main" class="btn btn-outline-info">{{tsecond.main}}</label>
+							</div>
+						</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- block-nav -->
+		<div v-if="isMenu" class="block-nav">
+			
+		</div>
+		<!-- The Modal -->
+		<div class="modal fade" id="modalSection">
+			<div class="modal-dialog">
+		      <div class="modal-content">
+
+		        <!-- Modal Header -->
+		        <div class="modal-header">
+		          <h4 v-show="!isMenu" class="modal-title">Add Section</h4>
+		          <h4 v-show="isMenu" class="modal-title">Add {{page}}</h4>
+		          <button type="button" class="close" data-dismiss="modal">&times;</button>
+		        </div>
+		        
+		        <!-- Modal body -->
+		        <div class="modal-body">
+		          <input id="inputSection" class="form-control" type="text" placeholder="name">
+		          <input type="checkbox" id="inputCard" class="d-none">
+		          <div v-show="isMenu && page == 'notes'" id="feactures" class="collapse">
+		          	<legend data-toggle="collapse" data-target="#hours1">1st schedule</legend>
+		          	<div id="hours1" class="collapse">
+			          	<div class="input-group m-2">
+			          		<input name="hour1" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour1" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group m-2">
+			          		<input name="hour1" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour1" class="form-control" type="time">
+			          	</div>
+		          	</div>
+	          		<legend data-toggle="collapse" data-target="#hours2">2nd schedule</legend>
+		          	<div id="hours2" class="collapse">
+			          	<div class="input-group m-2">
+			          		<input name="hour2" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour2" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group m-2">
+			          		<input name="hour2" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour2" class="form-control" type="time">
+			          	</div>
+		          	</div>
+		          </div>
+		        </div>
+		        
+		        <!-- Modal footer -->
+		        <div class="modal-footer d-flex" :class="{sbetween:isMenu}">
+		        		<div v-show="isMenu && page == 'notes'">
+		        			<button class="btn btn-info" data-toggle="tooltip" title="enable isCard allow to add more features">?</button>
+		        			<label 	id="isCardActive" class="btn btn-info disabled m-0" data-toggle="collapse" data-target="#feactures" @click="toggleActive('isCardActive')" for="inputCard">
+		    					isCard
+		    				</label>
+		        		</div>
+	         		<div>
+	         			<button id="closeModal" type="button" class="btn btn-danger" data-dismiss="modal">CANCEL</button>
+	          			<button v-if="!isMenu" type="button" class="btn btn-success" @click="addSection">OK</button>
+	          			<button v-if="isMenu && page == 'notes'" type="button" class="btn btn-success" @click="addNote">OK</button>
+	          			<button v-if="isMenu && page == 'tasks'" type="button" class="btn btn-success" @click="addTask">OK</button>
+	         		</div>
+		        </div>
+		        
+		      </div>
+		    </div>
+		</div>
+
+		<nav id="nav" class="flexbox fixed-bottom">
+			<div id="tasks" class="btn-box active" @click="changePage">Tasks</div>
+			<div id="notes" class="btn-box" @click="changePage">Notes</div>
+		</nav>
+	</div>
+
+	<!-- scripts -->
+	<!-- vue -->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="js/main.js"></script>
+</body>
+</html>
