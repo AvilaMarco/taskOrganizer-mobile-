@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width">
+	<meta name="mobile-web-app-capable" content="yes">
+	<title>TasksList and CardNotes</title>
+	<link rel="shortcut icon" sizes="192x192" href="img/icons/android-icon-192x192.png">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="https://bootswatch.com/4/darkly/bootstrap.min.css">
+	<link rel='manifest' href='manifest.json'>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<!-- MENU -->
+	<div class="display-100" id="app">
+		<div class="btn-add-section d-flex">
+			<div data-toggle="modal" data-target="#modalSection" class="btn-block">
+				<div v-show="!isMenu" class="btn btn-outline-success btn-block">
+					Add Section
+				</div>
+				<div v-show="isMenu" class="btn btn-outline-success mt-0 btn-block">
+					Add {{page}}
+				</div>
+			</div>
+			<img v-if="userData != null" :src="userData.photoURL" class="rounded-circle ml-1" style="width: 36px;" data-toggle="modal" data-target="#userModal">
+			<img v-else src="img/logo-user.png" class="rounded-circle ml-1" style="width: 36px;" data-toggle="modal" data-target="#userModal">
+		</div>
+
+		<!-- Task -->
+		<div v-show="page == 'tasks' && !isMenu" class="display-use">
+			<div v-for="task in vueDB.tasks"class="btn btn-outline-info btn-block progress p-relative h-6 p-0" @click="swapMenu(task)">
+				<div class="progress-bar progress-bar-animated " style="width: 50%;"></div>
+				<span class="absCenter">{{task.name}}</span>
+			</div>
+		</div>
+
+		<!-- Notes -->
+		<div v-show="page == 'notes' && !isMenu" class="display-use">
+			<div v-for="note in vueDB.notes" class="btn btn-primary btn-block" @click="swapMenu(note)">
+				{{note.name}}
+			</div>
+		</div>
+
+		<!-- menuOfSection -->
+		<div v-show="isMenu" class="display-use">
+			<div class="p-relative">
+				<img src="img/backarrow.png" class="close icon" @click="swapMenu(null)">
+				<h3>{{pageSection}}</h3>
+			</div>
+			<div class="display-menu-use">
+
+				<!-- notes -->
+				<div v-if="page == 'notes'" v-for="item in arrayMenu" class="btn btn-info btn-block" @click="viewDataCard(item)" data-toggle="modal" data-target="#notesModal">
+					<span>{{item.name}}</span>
+					<div v-if="item.isCard">
+						<div v-if="item.time1 != undefined" class="d-flex sbetween">
+							<div>
+								{{item.time1.day1}} a {{item.time1.day2}} 
+							</div>
+							de
+							<div>
+								{{item.time1.hour1}}hs a {{item.time1.hour2}}hs
+							</div>
+						</div>
+						<div v-if="item.time2 != undefined" class="d-flex sbetween">
+							<div>
+								{{item.time2.day1}} a {{item.time2.day2}}
+							</div>
+							de
+							<div>
+								{{item.time2.hour1}}hs a {{item.time2.hour2}}hs
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- tasks -->
+				<div v-if="page == 'tasks'" v-for="(item,index) in arrayMenu">
+			  		<div class="d-flex mb-2 btn-group btn-block">
+			  			<div class="btn-group bg-info px-40">
+			  				<input :id="item.name" type="checkbox" class="square-20 absCenter" v-model="item.done">
+			  			</div>
+						<div class="flex-grow-1 p-relative btn-group">
+							<div class="h-100 btn btn-outline-info btn-block progress form-control p-absolute p-0 tasks">
+								<div class="progress-bar progress-bar-striped progress-bar-animated bg-no-color" :style="{width: porcentajetasks(item) + '%'}"></div>
+								<label :for="item.name" class="c-blue absCenter m-0 w-100" :class="{completeTask: item.done}">{{item.name}}</label>
+							</div>
+						</div>
+			  			<div class="btn-group">
+			  				<button data-toggle="collapse" :data-target="'#t'+index" class="btn btn-info dropdown-toggle tasks"></button>
+			  			</div>
+			  		</div>
+					<div :id="'t'+index" class="collapse">
+						<div class="subtasks">
+							<div class="d-flex flex-column mt-1 mb-2">
+								<input :id="'its'+index" type="text" placeholder="add subtasks" data-toggle="collapse" :data-target="'#ts'+index" class="form-control">
+								<div :id="'ts'+index" class="collapse">
+									<div class="d-flex">
+										<button class="btn-danger w-50 no-outline tasks" @click="clearInput('its'+index)" data-toggle="collapse" :data-target="'#ts'+index">CANCEL</button>
+										<button class="btn-success w-50 no-outline tasks" @click="addSecondTask(item, index)">OK</button>
+									</div>
+								</div>
+							</div>
+							<div v-for="tsecond in item.second" class="d-flex btn-group btn-block">
+					  			<div class="btn-group bg-info px-40">
+					  				<input :id="tsecond.name" type="checkbox" class="square-20 absCenter" v-model="tsecond.done">
+					  			</div>
+								<div class="flex-grow-1 btn btn-outline-info btn-group tasks">
+									<label :for="tsecond.name" class="c-blue absCenter m-0 w-100">{{tsecond.name}}</label>
+								</div>
+					  		</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- block-nav -->
+		<div v-if="isMenu" class="block-nav"></div>
+
+		<!-- The Modal -->
+		<div class="modal fade" id="modalSection">
+			<div class="modal-dialog">
+		      <div class="modal-content">
+
+		        <!-- Modal Header -->
+		        <div class="modal-header">
+		          <h4 v-show="!isMenu" class="modal-title">Add Section</h4>
+		          <h4 v-show="isMenu" class="modal-title">Add {{page}}</h4>
+		          <button type="button" class="close" data-dismiss="modal" @click="clearInput('inputSection')">&times;</button>
+		        </div>
+		        
+		        <!-- Modal body -->
+		        <div class="modal-body">
+		          <input id="inputSection" class="form-control" type="text" placeholder="name">
+		          <input type="checkbox" id="inputCard" class="d-none">
+
+		          <!-- data schedule from card -->
+		          <div v-show="isMenu && page == 'notes'" id="feactures" class="collapse">
+		          	<legend data-toggle="collapse" data-target="#hours1">1st schedule</legend>
+		          	<div id="hours1" class="collapse">
+			          	<div class="input-group m-2">
+			          		<input name="hour1" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour1" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group m-2">
+			          		<input name="hour1" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour1" class="form-control" type="time">
+			          	</div>
+		          	</div>
+	          		<legend data-toggle="collapse" data-target="#hours2">2nd schedule</legend>
+		          	<div id="hours2" class="collapse">
+			          	<div class="input-group m-2">
+			          		<input name="hour2" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour2" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group m-2">
+			          		<input name="hour2" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour2" class="form-control" type="time">
+			          	</div>
+		          	</div>
+		          </div>
+		        </div>
+		        
+		        <!-- Modal footer -->
+		        <div class="modal-footer d-flex" :class="{sbetween:isMenu}">
+		        		<div v-show="isMenu && page == 'notes'">
+		        			<button class="btn btn-info" data-toggle="tooltip" title="enable isCard allow to add more features">?</button>
+		        			<label 	id="isCardActive" class="btn btn-info disabled m-0" data-toggle="collapse" data-target="#feactures" @click="toggleActive('isCardActive')" for="inputCard">
+		    					isCard
+		    				</label>
+		        		</div>
+	         		<div>
+	         			<button id="closeModal" class="btn btn-danger" data-dismiss="modal" @click="clearInput('inputSection')">CANCEL</button>
+	          			<button v-if="!isMenu" class="btn btn-success" @click="addSection">OK</button>
+	          			<button v-if="isMenu && page == 'notes'" class="btn btn-success" @click="addNote">OK</button>
+	          			<button v-if="isMenu && page == 'tasks'" class="btn btn-success" @click="addTask">OK</button>
+	         		</div>
+		        </div>
+		        
+		      </div>
+		    </div>
+		</div>
+
+		<!-- the modal user date -->
+		<div class="modal fade" id="userModal">
+		    <div class="modal-dialog">
+		      <div class="modal-content">
+		      
+		        <!-- Modal Header -->
+		        <div class="modal-header">
+		          <h4 class="modal-title">User Information</h4>
+		          <button type="button" class="close" data-dismiss="modal">&times;</button>
+		        </div>
+		        
+		        <!-- Modal body -->
+		        <div class="modal-body body-modal-user">
+		          <img v-if="userData != null" :src="userData.photoURL" class="w-50">
+		          <img v-else src="img/logo-user.png" class="w-50">
+		          <div v-if="userData == null" class="mt-3">
+		          	<button class="btn btn-info btn-block" @click="logIn">Log in with google</button>
+		          </div>
+		          <div v-if="userData != null" class="mt-3">
+		          	<p class="text-center h4">{{userData.email}}</p>
+		          	<p class="text-center h5">{{userData.displayName}}</p>
+		          	<button class="btn btn-success btn-block">Update Data Base</button>
+		          	<button class="btn btn-danger btn-block" @click="logOut">Logout</button>
+		          </div>
+		        </div>
+
+		      </div>
+		    </div>
+		</div>
+
+		<!-- the modal card note -->
+		<div class="modal fade" id="notesModal">
+		    <div class="modal-dialog">
+		      <div class="modal-content">
+		      
+		        <!-- Modal Header -->
+		        <div class="modal-header">
+		          <h4 class="modal-title">{{modalNote.name}}</h4>
+		          <button type="button" class="close" data-dismiss="modal" @click="clearModalNote()">&times;</button>
+		        </div>
+		        
+		        <!-- Modal body -->
+		        <div class="modal-body">
+		          <div v-if="modalNote.isCard">
+
+					<legend data-toggle="collapse" data-target="#schedule1">1st schedule</legend>	          	
+		          	<div v-if="modalNote.time1 == undefined" id="schedule1" class="collapse">
+			          	<div class="input-group m-2">
+			          		<input name="hour11" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour11" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group m-2">
+			          		<input name="hour11" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour11" class="form-control" type="time">
+			          	</div>
+			          	<div class="d-flex mt-1">
+							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
+							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('hour11')">OK</button>
+						</div>
+					</div>
+					<div v-else class="d-flex sbetween">
+						<div class="text-info">
+							{{modalNote.time1.day1}} <span>a</span> {{modalNote.time1.day2}} 
+						</div>
+						de
+						<div class="text-info">
+							{{modalNote.time1.hour1}}hs <span>a</span> {{modalNote.time1.hour2}}hs
+						</div>
+					</div>
+
+					<legend data-toggle="collapse" data-target="#schedule2">2nd schedule</legend>
+					<div v-if="modalNote.time2 == undefined" class="collapse" id="schedule2">
+						<div class="input-group m-2">
+			          		<input name="hour22" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour22" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group m-2">
+			          		<input name="hour22" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour22" class="form-control" type="time">
+			          	</div>
+			          	<div class="d-flex mt-1">
+							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
+							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('hour22')">OK</button>
+						</div>
+					</div>
+					<div v-else class="d-flex sbetween">
+						<div class="text-info">
+							{{modalNote.time2.day1}} <span>a</span> {{modalNote.time2.day2}}
+						</div>
+						de
+						<div class="text-info">
+							{{modalNote.time2.hour1}}hs <span>a</span> {{modalNote.time2.hour2}}hs
+						</div>
+					</div>
+
+					<legend data-toggle="collapse" data-target="#description">Description</legend>
+		          	<div v-if="modalNote.description == ''" class="collapse" id="description">
+		          		<textarea class="form-control" rows="3" id="modalNote-description2" placeholder="add description"></textarea>
+						<div class="d-flex mt-1">
+							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
+							<button class="btn-success w-50 no-outline tasks" @click="updateNoteData('2')">OK</button>
+						</div>
+		          	</div>
+		          	<div v-else>
+		          		<p class="text-center m-0">{{modalNote.description}}</p>
+		          	</div>
+
+		          	<div v-for="extras in modalNote.extras">
+		          		<span>{{extras.name}}</span>: <span>{{extras.value}}</span>
+		          	</div>
+
+		          	<legend data-toggle="collapse" data-target="#newData">New Data</legend>
+		          	<div class="collapse" id="newData">
+		          		<input id="nameData" type="text" class="form-control" placeholder="name data. Example: 'mail'">
+		          		<input id="valueData" type="text" class="form-control" placeholder="value data. Example: 'example@gmail'">
+		          		<div class="d-flex mt-1">
+							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
+							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('newValue')">OK</button>
+						</div>
+		          	</div>
+
+		          </div>
+		          <div v-else>
+	          		<legend>Description</legend>
+		          	<div v-if="modalNote.description == ''">
+		          		<textarea class="form-control" rows="4" id="modalNote-description1" placeholder="add description"></textarea>
+						<div class="d-flex mt-1">
+							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
+							<button class="btn-success w-50 no-outline tasks" @click="updateNoteData('1')">OK</button>
+						</div>
+		          	</div>
+		          	<div v-else>
+		          		<p class="text-center m-0">{{modalNote.description}}</p>
+		          	</div>
+		          </div>
+		        </div>
+		        
+		      </div>
+		    </div>
+		</div>
+
+		<nav id="nav" class="flexbox fixed-bottom">
+			<div id="tasks" class="btn-box active" @click="changePage">Tasks</div>
+			<div id="notes" class="btn-box" @click="changePage">Notes</div>
+		</nav>
+	</div>
+
+	<!-- scripts -->
+	<!-- The core Firebase JS SDK is always required and must be listed first -->
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+
+	<!-- TODO: Add SDKs for Firebase products that you want to use
+  	https://firebase.google.com/docs/web/setup#available-libraries -->
+  	<!-- Add Firebase products that you want to use -->
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
+
+	<script>
+	  // Your web app's Firebase configuration
+	  var firebaseConfig = {
+	    apiKey: "AIzaSyCt1p3RntqauOYAWalGZzhBcF7FwcnuAFI",
+	    authDomain: "listcardmanager.firebaseapp.com",
+	    databaseURL: "https://listcardmanager.firebaseio.com",
+	    projectId: "listcardmanager",
+	    storageBucket: "listcardmanager.appspot.com",
+	    messagingSenderId: "690464826303",
+	    appId: "1:690464826303:web:01dff7a66a31e4ddafb70a"
+	  };
+	  // Initialize Firebase
+	  firebase.initializeApp(firebaseConfig);
+	</script>
+	<!-- vue -->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<!-- database -->
+	<script src="js/db.js"></script>
+	<script src="js/main.js"></script>
+	<!-- services worker -->
+	<script type="text/javascript">
+		// This is the "Offline copy of pages" service worker
+		// Add this below content to your HTML page, or add the js file to your page at the very top to register service worker
+
+		// Check compatibility for the browser we're running this in
+		if ("serviceWorker" in navigator) {
+		  if (navigator.serviceWorker.controller) {
+		    console.log("[PWA Builder] active service worker found, no need to register");
+		  } else {
+		    // Register the service worker
+		    navigator.serviceWorker
+		      .register("pwabuilder-sw.js", {
+		        scope: "./"
+		      })
+		      .then(function (reg) {
+		        console.log("[PWA Builder] Service worker has been registered for scope: " + reg.scope);
+		      });
+		  }
+		}
+	</script>
+</body>
+</html>
