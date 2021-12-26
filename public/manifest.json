@@ -1,11 +1,13 @@
 {
   "name": "TasksList and CardNotes",
-  "short_name": "notes",
-  "theme_color": "#2196f3",
-  "background_color": "#2196f3",
+  "short_name": "Notes",
+  "theme_color": "#06bc80",
+  "background_color": "#303030",
   "display": "fullscreen",
   "orientation": "portrait",
+  "description": "Create notes and tasks and organize them however you want.",
   "Scope": "/",
+  "lang": "en-US",
   "start_url": "/",
   "icons": [
   {
@@ -44,6 +46,5 @@
    "type": "image/png",
    "density": "4.0"
   }
- ],
-  "splash_pages": null
+ ]
 }

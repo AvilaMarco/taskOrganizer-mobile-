@@ -1,6 +1,6 @@
 // This is the "Offline copy of pages" service worker
 
-const CACHE = "pwabuilder-offline";
+const CACHE = "datazo v1.0.2";
 
 // TODO: replace the following with the correct offline fallback page i.e.: const offlineFallbackPage = "index.html";
 const offlineFallbackPage = "./index.html";
@@ -41,6 +41,21 @@ self.addEventListener("fetch", function (event) {
         return fromCache(event.request);
       })
   );
+});
+
+// updateCache
+self.addEventListener('activate', function(event) {
+    event.waitUntil(caches.keys().then(function(names) {
+        return Promise.all(
+            names.filter(function(name) {
+                return name !== CACHE;
+            }).map(function(name) {
+                return caches.delete(name);
+            })
+        );
+    }).then(function() {
+        return self.clients.claim();
+    }));
 });
 
 function fromCache(request) {

@@ -10,12 +10,40 @@
 	<link rel="stylesheet" href="https://bootswatch.com/4/darkly/bootstrap.min.css">
 	<link rel='manifest' href='manifest.json'>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 </head>
 <body>
 	<!-- MENU -->
 	<div class="display-100" id="app">
+		<div v-if="!loadComplete" class="inicio">
+			<button class="btn btn-outline-info w-75 absCenter border-0">
+				<div class="absCenter" style="top: -10%">
+			  	<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+			  </div>
+			  <div class="absCenter d-flex flex-column" style="left: 25%;">
+			  	<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+			  </div>
+			  <span style="font-size: 26px;" class="p-relative text-info">Loading...</span>
+			  <div class="absCenter d-flex flex-column" style="left: 75%;">
+			  	<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+			  </div>
+			  <div class="absCenter" style="top: 115%">
+			  	<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+				<div class="spinner-grow text-info" style="transform: scale(0.3);"></div>
+			  </div>
+			</button>
+		</div>
+		<div class="alert alert-success w-100 d-none text-center" id="alertdb">
+			The database has been updated.
+		</div>
 		<div class="btn-add-section d-flex">
 			<div data-toggle="modal" data-target="#modalSection" class="btn-block">
 				<div v-show="!isMenu" class="btn btn-outline-success btn-block">
@@ -25,22 +53,28 @@
 					Add {{page}}
 				</div>
 			</div>
-			<img v-if="userData != null" :src="userData.photoURL" class="rounded-circle ml-1" style="width: 36px;" data-toggle="modal" data-target="#userModal">
-			<img v-else src="img/logo-user.png" class="rounded-circle ml-1" style="width: 36px;" data-toggle="modal" data-target="#userModal">
+			<img v-if="userData != null" :src="userData.photoURL" class="rounded-circle ml-1 w-36px" data-toggle="modal" data-target="#userModal">
+			<img v-else src="img/logo-user.png" class="rounded-circle ml-1 w-36px" data-toggle="modal" data-target="#userModal">
 		</div>
 
 		<!-- Task -->
 		<div v-show="page == 'tasks' && !isMenu" class="display-use">
-			<div v-for="task in vueDB.tasks"class="btn btn-outline-info btn-block progress p-relative h-6 p-0" @click="swapMenu(task)">
-				<div class="progress-bar progress-bar-animated " style="width: 50%;"></div>
-				<span class="absCenter">{{task.name}}</span>
+			<div v-for="task in vueDB.tasks" class="conteiner-slide mb-2">
+				<div :data-ID="task.name" class="btn btn-outline-info btn-block bg-secondary h-36px p-absolute z-9 slider text-center text-white" @click="swapMenu(task)">
+					{{task.name}}
+					<div class="progress-bar progress-bar-animated progressBar" :style="{width: porcentajetasks(task.items,false) + '%'}"></div>
+				</div>
+				<logos-slider :dataid="task" @event-edit="editData" @event-delete="deleteData"></logos-slider>
 			</div>
 		</div>
 
 		<!-- Notes -->
 		<div v-show="page == 'notes' && !isMenu" class="display-use">
-			<div v-for="note in vueDB.notes" class="btn btn-primary btn-block" @click="swapMenu(note)">
-				{{note.name}}
+			<div v-for="note in vueDB.notes" class="conteiner-slide mb-2">
+				<div :data-ID="note.name" class="btn btn-primary btn-block p-absolute z-9 slider" @click="swapMenu(note)">
+					{{note.name}}
+				</div>
+				<logos-slider :dataid="note" @event-edit="editData" @event-delete="deleteData"></logos-slider>
 			</div>
 		</div>
 
@@ -53,28 +87,31 @@
 			<div class="display-menu-use">
 
 				<!-- notes -->
-				<div v-if="page == 'notes'" v-for="item in arrayMenu" class="btn btn-info btn-block" @click="viewDataCard(item)" data-toggle="modal" data-target="#notesModal">
-					<span>{{item.name}}</span>
-					<div v-if="item.isCard">
-						<div v-if="item.time1 != undefined" class="d-flex sbetween">
-							<div>
-								{{item.time1.day1}} a {{item.time1.day2}} 
+				<div v-if="page == 'notes'" v-for="item in arrayMenu" class="conteiner-slide mb-2">
+					<div :data-ID="item.name" class="btn btn-info btn-block p-absolute z-9 slider h-36px" @click="viewDataCard(item)" data-toggle="modal" data-target="#notesModal">
+						<span>{{item.name}}</span>
+						<div v-if="item.isCard">
+							<div v-if="item.time1 != undefined" class="d-flex sbetween">
+								<div>
+									{{item.time1.day1}} a {{item.time1.day2}} 
+								</div>
+								de
+								<div>
+									{{item.time1.hour1}}hs a {{item.time1.hour2}}hs
+								</div>
 							</div>
-							de
-							<div>
-								{{item.time1.hour1}}hs a {{item.time1.hour2}}hs
-							</div>
-						</div>
-						<div v-if="item.time2 != undefined" class="d-flex sbetween">
-							<div>
-								{{item.time2.day1}} a {{item.time2.day2}}
-							</div>
-							de
-							<div>
-								{{item.time2.hour1}}hs a {{item.time2.hour2}}hs
+							<div v-if="item.time2 != undefined" class="d-flex sbetween">
+								<div>
+									{{item.time2.day1}} a {{item.time2.day2}}
+								</div>
+								de
+								<div>
+									{{item.time2.hour1}}hs a {{item.time2.hour2}}hs
+								</div>
 							</div>
 						</div>
 					</div>
+					<logos-slider :dataid="item" @event-edit="editData" @event-delete="deleteData"></logos-slider>
 				</div>
 
 				<!-- tasks -->
@@ -84,10 +121,11 @@
 			  				<input :id="item.name" type="checkbox" class="square-20 absCenter" v-model="item.done">
 			  			</div>
 						<div class="flex-grow-1 p-relative btn-group">
-							<div class="h-100 btn btn-outline-info btn-block progress form-control p-absolute p-0 tasks">
-								<div class="progress-bar progress-bar-striped progress-bar-animated bg-no-color" :style="{width: porcentajetasks(item) + '%'}"></div>
-								<label :for="item.name" class="c-blue absCenter m-0 w-100" :class="{completeTask: item.done}">{{item.name}}</label>
+							<div :data-ID="item.name" class="btn btn-outline-info btn-block bg-secondary p-absolute z-9 slider text-center text-white" :class="{completeTask: item.done}" @click="linkTasks(item)">
+								{{item.name}}
+								<div class="progress-bar progress-bar-animated progressBar" :style="{width: porcentajetasks(item.second,item.done) + '%'}"></div>
 							</div>
+							<logos-slider :dataid="item" @event-edit="editData" @event-delete="deleteData"></logos-slider>
 						</div>
 			  			<div class="btn-group">
 			  				<button data-toggle="collapse" :data-target="'#t'+index" class="btn btn-info dropdown-toggle tasks"></button>
@@ -105,13 +143,16 @@
 								</div>
 							</div>
 							<div v-for="tsecond in item.second" class="d-flex btn-group btn-block">
-					  			<div class="btn-group bg-info px-40">
-					  				<input :id="tsecond.name" type="checkbox" class="square-20 absCenter" v-model="tsecond.done">
-					  			</div>
-								<div class="flex-grow-1 btn btn-outline-info btn-group tasks">
-									<label :for="tsecond.name" class="c-blue absCenter m-0 w-100">{{tsecond.name}}</label>
+								<div class="btn-group bg-info px-40">
+									<input :id="tsecond.name" type="checkbox" class="square-20 absCenter" v-model="tsecond.done">
 								</div>
-					  		</div>
+								<div class="flex-grow-1 p-relative">
+									<div :data-ID="tsecond.name" class="btn btn-outline-info bg-secondary h-100 br-derecha btn-block p-absolute z-9 slider text-center" :class="{completeTask: tsecond.done}" @click="linkTasks(item,tsecond)">
+										{{tsecond.name}}
+									</div>
+									<logos-slider :dataid="tsecond" @event-edit="editData" @event-delete="deleteData"></logos-slider>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -210,11 +251,10 @@
 		          <div v-if="userData != null" class="mt-3">
 		          	<p class="text-center h4">{{userData.email}}</p>
 		          	<p class="text-center h5">{{userData.displayName}}</p>
-		          	<button class="btn btn-success btn-block">Update Data Base</button>
+		          	<button class="btn btn-success btn-block" @click="updateDataBase">Update Database</button>
 		          	<button class="btn btn-danger btn-block" @click="logOut">Logout</button>
-		          </div>
+				  </div>
 		        </div>
-
 		      </div>
 		    </div>
 		</div>
@@ -234,24 +274,8 @@
 		        <div class="modal-body">
 		          <div v-if="modalNote.isCard">
 
-					<legend data-toggle="collapse" data-target="#schedule1">1st schedule</legend>	          	
-		          	<div v-if="modalNote.time1 == undefined" id="schedule1" class="collapse">
-			          	<div class="input-group m-2">
-			          		<input name="hour11" class="form-control" type="text" placeholder="day">
-			          		<span class="input-group-text">a</span>
-			          		<input name="hour11" class="form-control" type="text" placeholder="day">
-			          	</div>
-			          	<div class="input-group m-2">
-			          		<input name="hour11" class="form-control" type="time">
-			          		<span class="input-group-text">a</span>
-			          		<input name="hour11" class="form-control" type="time">
-			          	</div>
-			          	<div class="d-flex mt-1">
-							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
-							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('hour11')">OK</button>
-						</div>
-					</div>
-					<div v-else class="d-flex sbetween">
+		          	<legend v-if="modalNote.time1">1st schedule</legend>
+					<div v-if="modalNote.time1" class="d-flex sbetween">
 						<div class="text-info">
 							{{modalNote.time1.day1}} <span>a</span> {{modalNote.time1.day2}} 
 						</div>
@@ -261,24 +285,8 @@
 						</div>
 					</div>
 
-					<legend data-toggle="collapse" data-target="#schedule2">2nd schedule</legend>
-					<div v-if="modalNote.time2 == undefined" class="collapse" id="schedule2">
-						<div class="input-group m-2">
-			          		<input name="hour22" class="form-control" type="text" placeholder="day">
-			          		<span class="input-group-text">a</span>
-			          		<input name="hour22" class="form-control" type="text" placeholder="day">
-			          	</div>
-			          	<div class="input-group m-2">
-			          		<input name="hour22" class="form-control" type="time">
-			          		<span class="input-group-text">a</span>
-			          		<input name="hour22" class="form-control" type="time">
-			          	</div>
-			          	<div class="d-flex mt-1">
-							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
-							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('hour22')">OK</button>
-						</div>
-					</div>
-					<div v-else class="d-flex sbetween">
+					<legend v-if="modalNote.time2">2nd schedule</legend>
+					<div v-if="modalNote.time2" class="d-flex sbetween">
 						<div class="text-info">
 							{{modalNote.time2.day1}} <span>a</span> {{modalNote.time2.day2}}
 						</div>
@@ -288,7 +296,56 @@
 						</div>
 					</div>
 
-					<legend data-toggle="collapse" data-target="#description">Description</legend>
+					<legend v-if="modalNote.description">Description :</legend>
+					<div v-if="modalNote.description">
+		          		<p class="mb-0 ml-3">{{modalNote.description}}</p>
+		          	</div>
+
+		          	<template v-for="extras in modalNote.extras">
+		          		<legend>{{extras.name}} :</legend>
+						<p class="ml-3">{{extras.value}}</p>
+		          	</template>
+
+		          	<!-- botones agregar-->
+		          	<button data-toggle="collapse" data-target="#newDataForm" class="btn btn-info btn-block">Add New Data</button>
+		          	<div class="collapse" id="newDataForm">
+					<legend v-if="modalNote.time1 == undefined" data-toggle="collapse" data-target="#schedule1">1st schedule</legend>	
+		          	<div v-if="modalNote.time1 == undefined" id="schedule1" class="collapse">
+			          	<div class="input-group mt-2">
+			          		<input name="hour11" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour11" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group mt-2">
+			          		<input name="hour11" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour11" class="form-control" type="time">
+			          	</div>
+			          	<div class="d-flex mt-2">
+							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
+							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('hour11')">OK</button>
+						</div>
+					</div>
+
+					<legend v-if="modalNote.time2 == undefined" data-toggle="collapse" data-target="#schedule2">2nd schedule</legend>
+					<div v-if="modalNote.time2 == undefined" class="collapse" id="schedule2">
+						<div class="input-group mt-2">
+			          		<input name="hour22" class="form-control" type="text" placeholder="day">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour22" class="form-control" type="text" placeholder="day">
+			          	</div>
+			          	<div class="input-group mt-2">
+			          		<input name="hour22" class="form-control" type="time">
+			          		<span class="input-group-text">a</span>
+			          		<input name="hour22" class="form-control" type="time">
+			          	</div>
+			          	<div class="d-flex mt-2">
+							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
+							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('hour22')">OK</button>
+						</div>
+					</div>
+					
+					<legend v-if="modalNote.description == ''" data-toggle="collapse" data-target="#description">Description</legend>
 		          	<div v-if="modalNote.description == ''" class="collapse" id="description">
 		          		<textarea class="form-control" rows="3" id="modalNote-description2" placeholder="add description"></textarea>
 						<div class="d-flex mt-1">
@@ -296,24 +353,17 @@
 							<button class="btn-success w-50 no-outline tasks" @click="updateNoteData('2')">OK</button>
 						</div>
 		          	</div>
-		          	<div v-else>
-		          		<p class="text-center m-0">{{modalNote.description}}</p>
-		          	</div>
-
-		          	<div v-for="extras in modalNote.extras">
-		          		<span>{{extras.name}}</span>: <span>{{extras.value}}</span>
-		          	</div>
 
 		          	<legend data-toggle="collapse" data-target="#newData">New Data</legend>
 		          	<div class="collapse" id="newData">
 		          		<input id="nameData" type="text" class="form-control" placeholder="name data. Example: 'mail'">
-		          		<input id="valueData" type="text" class="form-control" placeholder="value data. Example: 'example@gmail'">
-		          		<div class="d-flex mt-1">
+		          		<input id="valueData" type="text" class="form-control mt-1" placeholder="value data. Example: 'example@gmail'">
+		          		<div class="d-flex mt-2">
 							<button class="btn-danger w-50 no-outline tasks" @click="clearInput('modalNote-description')">CANCEL</button>
 							<button class="btn-success w-50 no-outline tasks" @click="updateNoteDataCard('newValue')">OK</button>
 						</div>
 		          	</div>
-
+		          	</div>
 		          </div>
 		          <div v-else>
 	          		<legend>Description</legend>
@@ -343,13 +393,9 @@
 	<!-- scripts -->
 	<!-- The core Firebase JS SDK is always required and must be listed first -->
 	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
-
-	<!-- TODO: Add SDKs for Firebase products that you want to use
-  	https://firebase.google.com/docs/web/setup#available-libraries -->
   	<!-- Add Firebase products that you want to use -->
 	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-firestore.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-auth.js"></script>
-
 	<script>
 	  // Your web app's Firebase configuration
 	  var firebaseConfig = {
@@ -369,6 +415,11 @@
 	<!-- database -->
 	<script src="js/db.js"></script>
 	<script src="js/main.js"></script>
+	<!-- <script>
+		document.addEventListener("DOMContentLoaded", () => {
+		   app.loadComplete = true
+		 });
+   </script> -->
 	<!-- services worker -->
 	<script type="text/javascript">
 		// This is the "Offline copy of pages" service worker
