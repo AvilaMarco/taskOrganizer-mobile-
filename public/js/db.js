@@ -55,60 +55,6 @@ function updateOnlineDB(localdb,name){
 	})
 }
 
-function mergeDBs(online,offline){
-	if (online.notes.length == 0 && online.tasks.length == 0){
-		return JSON.parse(JSON.stringify(offline))
-	}
-	// notes
-	offline.notes.forEach(e => {
-		if (!online.notes.some(f => f.name == e.name)){
-			online.notes = [...online.notes,e]
-		}else{
-			let compareItem = online.notes.filter(f => f.name == e.name)[0]
-			e.items.forEach(f => {
-				if (!compareItem.items.some(g => g.name == f.name)) {
-					compareItem.items = [...compareItem.items,f]
-				}else{
-					let compareItem2 = compareItem.items.filter(g => g.name == f.name)[0]
-					if (!f.isCard){
-						if (f.description != compareItem2.description && f.description != '') {
-							compareItem2.description = f.description
-						}
-					}else{
-						// comprobar propiedas de una nota que es tarjeta y tiene mas datos
-					}
-				}
-			})
-		}
-	})
-	// tasks
-	offline.tasks.forEach(e => {
-		if (!online.tasks.some(f => f.name == e.name)){
-			online.tasks = [...online.tasks,e]
-		}else{
-			let compareItem = online.tasks.filter(f => f.name == e.name)[0]
-			e.items.forEach(f => {
-				if (!compareItem.items.some(g => g.name == f.name)) {
-					compareItem.items = [...compareItem.items,f]
-				}else{
-					let compareItem2 = compareItem.items.filter(g => g.name == f.name)[0]
-					if (compareItem2.done != f.done && f.done) compareItem2.done = f.done
-					f.second.forEach(g => {
-						if (!compareItem2.second.some(h => h.name == g.name)){
-							compareItem2.second = [...compareItem2.second,g]
-						}else{
-							let compareItem3 = compareItem2.second.filter(h => h.name == g.name)[0]
-							if (compareItem3.done != g.done && g.done) compareItem3.done = g.done
-						}
-					})
-
-				}
-			})
-		}
-	})
-
-	return JSON.parse(JSON.stringify(online))
-}
 
 function crearUser(objUser){
 	db.doc("users/"+objUser.email).get().then( doc => {

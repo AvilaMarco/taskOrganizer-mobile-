@@ -1,0 +1,27 @@
+{
+  "name": "taskorganizer-mobile-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AvilaMarco/taskOrganizer-mobile-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AvilaMarco/taskOrganizer-mobile-/issues"
+  },
+  "homepage": "https://github.com/AvilaMarco/taskOrganizer-mobile-#readme",
+  "dependencies": {
+    "json8-patch": "^1.0.6",
+    "lodash": "^4.17.21",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1"
+  }
+}

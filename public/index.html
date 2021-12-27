@@ -58,17 +58,20 @@
 		</div>
 
 		<!-- Task -->
-		<div v-show="page == 'tasks' && !isMenu" class="display-use">
-			<div v-for="task in vueDB.tasks" class="conteiner-slide mb-2">
-				<div :data-ID="task.name" class="btn btn-outline-info btn-block bg-secondary h-36px p-absolute z-9 slider text-center text-white" @click="swapMenu(task)">
-					{{task.name}}
-					<div class="progress-bar progress-bar-animated progressBar" :style="{width: porcentajetasks(task.items,false) + '%'}"></div>
+		<template v-if="vueDB != null">
+			<div v-show="page == 'tasks' && !isMenu" class="display-use">
+				<div v-for="task in vueDB.tasks" class="conteiner-slide mb-2">
+					<div :data-ID="task.name" class="btn btn-outline-info btn-block bg-secondary h-36px p-absolute z-9 slider text-center text-white" @click="swapMenu(task)">
+						{{task.name}}
+						<div class="progress-bar progress-bar-animated progressBar" :style="{width: porcentajetasks(task.items,false) + '%'}"></div>
+					</div>
+					<logos-slider :dataid="task" @event-edit="editData" @event-delete="deleteData"></logos-slider>
 				</div>
-				<logos-slider :dataid="task" @event-edit="editData" @event-delete="deleteData"></logos-slider>
 			</div>
-		</div>
+		</template>
 
 		<!-- Notes -->
+		<template v-if="vueDB != null">
 		<div v-show="page == 'notes' && !isMenu" class="display-use">
 			<div v-for="note in vueDB.notes" class="conteiner-slide mb-2">
 				<div :data-ID="note.name" class="btn btn-primary btn-block p-absolute z-9 slider" @click="swapMenu(note)">
@@ -77,6 +80,7 @@
 				<logos-slider :dataid="note" @event-edit="editData" @event-delete="deleteData"></logos-slider>
 			</div>
 		</div>
+		</template>
 
 		<!-- menuOfSection -->
 		<div v-show="isMenu" class="display-use">
@@ -413,8 +417,9 @@
 	<!-- vue -->
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<!-- database -->
-	<script src="js/db.js"></script>
-	<script src="js/main.js"></script>
+	<!-- <script src="js/db.js"></script>
+	<script src="js/main.js"></script> -->
+	<script src="js/index.js"></script>
 	<!-- <script>
 		document.addEventListener("DOMContentLoaded", () => {
 		   app.loadComplete = true
