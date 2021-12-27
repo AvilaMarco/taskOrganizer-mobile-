@@ -274,6 +274,9 @@ let app = new Vue({
 		},
 		updateDataBase(){
 			updateDB(this.vueDB,this.userData)
+		},
+		getDataBase(){
+			getOnlineDB(this.userData.email)
 		}
 	}
 })
